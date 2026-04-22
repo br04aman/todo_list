@@ -43,40 +43,4 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-// ——— Start Server ———
-async function start() {
-  try {
-    // Connect Redis (lazy connect mode)
-    await redis.connect();
-    console.log(`[Server] Redis connected`);
-
-    // Verify DB connection
-    await prisma.$connect();
-    console.log(`[Server] PostgreSQL connected`);
-
-    app.listen(PORT, () => {
-      console.log(`[Server] Backend running on http://localhost:${PORT}`);
-      console.log(`[Server] Frontend origin: ${FRONTEND_URL}`);
-    });
-  } catch (error) {
-    console.error('[Server] Failed to start:', error);
-    process.exit(1);
-  }
-}
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('[Server] SIGTERM received, shutting down...');
-  await prisma.$disconnect();
-  redis.disconnect();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('[Server] SIGINT received, shutting down...');
-  await prisma.$disconnect();
-  redis.disconnect();
-  process.exit(0);
-});
-
-start();
+export default app;
