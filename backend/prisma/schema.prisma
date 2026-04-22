@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?   // null for OAuth-only users
+  oauthProvider String?   @map("oauth_provider")
+  oauthId       String?   @map("oauth_id")
+  isPremium     Boolean   @default(false) @map("is_premium")
+  mfaSecret     String?   @map("mfa_secret")  // encrypted with ChaCha20
+  mfaEnabled    Boolean   @default(false) @map("mfa_enabled")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  tasks         Task[]
+  payments      Payment[]
+
+  @@map("users")
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  text        String    // encrypted with ChaCha20 at application layer
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, completed])
+  @@map("tasks")
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  razorpayOrderId String   @map("razorpay_order_id")
+  razorpayPaymentId String? @map("razorpay_payment_id")
+  amount          Int      // in paise
+  currency        String   @default("INR")
+  status          String   @default("created") // created | paid | failed
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([razorpayOrderId])
+  @@map("payments")
+}

@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-}
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+      - NEXT_PUBLIC_RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-}
+    env_file:
+      - .env
+      - .env.local
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/todo_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=super_secret_jwt_key_for_dev_only
+      - CHACHA20_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      - FRONTEND_URL=http://localhost:3001
+      - PORT=4000
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET:-}
+    env_file:
+      - .env
+      - .env.local
+      # Add OAuth and Razorpay keys manually to a .env file locally
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=todo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
