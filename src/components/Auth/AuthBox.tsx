@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { login, register } from '@/lib/api';
-// Use the Next.js API route that proxies to backend passport auth
-const GOOGLE_AUTH_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/google`;
-const GITHUB_AUTH_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/github`;
+import { login, register, getGoogleOAuthUrl, getGitHubOAuthUrl } from '@/lib/api';
+
+const GOOGLE_AUTH_URL = getGoogleOAuthUrl();
+const GITHUB_AUTH_URL = getGitHubOAuthUrl();
+
 
 export default function AuthBox() {
   const router = useRouter();

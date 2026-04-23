@@ -10,7 +10,8 @@ import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 
 const router = Router();
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+
 
 const registerSchema = z.object({
   email: z.string().email(),

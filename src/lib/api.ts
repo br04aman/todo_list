@@ -1,6 +1,7 @@
 // ——— API Client for Express Backend ———
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+
 
 // ——— Token Management ———
 export function getAccessToken(): string | null {
