@@ -1,23 +1,36 @@
 import Redis from 'ioredis';
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const REDIS_URL = process.env.REDIS_URL;
+const isRedisConfigured = !!REDIS_URL && REDIS_URL !== 'redis://localhost:6379' || process.env.NODE_ENV === 'development';
 
-export const redis = new Redis(REDIS_URL, {
-  maxRetriesPerRequest: 3,
-  retryStrategy(times) {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
-  lazyConnect: true,
-});
+export const redis = isRedisConfigured
+  ? new Redis(REDIS_URL!, {
+      maxRetriesPerRequest: 1, // Fail fast in production if not available
+      retryStrategy(times) {
+        return times > 3 ? null : Math.min(times * 100, 2000);
+      },
+      lazyConnect: true,
+    })
+  : ({
+      get: async () => null,
+      setex: async () => null,
+      del: async () => null,
+      keys: async () => [],
+      incr: async () => 0,
+      expire: async () => null,
+      zadd: async () => null,
+      zrem: async () => null,
+      zrevrange: async () => [],
+      zcard: async () => 0,
+      ping: async () => 'PONG (simulated)',
+      on: () => {},
+    } as any);
 
-redis.on('error', (err) => {
-  console.error('[Redis] Connection error:', err.message);
-});
-
-redis.on('connect', () => {
-  console.log('[Redis] Connected successfully');
-});
+if (isRedisConfigured) {
+  redis.on('error', (err: any) => {
+    console.warn('[Redis] Optional connection error:', err.message);
+  });
+}
 
 // ——— Cache helpers ———
 
