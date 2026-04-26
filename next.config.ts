@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone', // Required for Docker deployment
   async rewrites() {
     // Only proxy in development. In production, vercel.json handles routing.
     if (process.env.NODE_ENV === 'development') {
