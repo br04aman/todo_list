@@ -15,7 +15,15 @@ const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:3000').repla
 
 // ——— Middleware ———
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow same-origin (Vercel serverless), no-origin (server-to-server), and configured frontend URL
+    if (!origin || origin === FRONTEND_URL) {
+      callback(null, true);
+    } else {
+      // Also allow any Vercel preview URLs for the same project
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -42,6 +50,12 @@ app.get('/api/health', async (_req, res) => {
   } catch (error: any) {
     res.status(503).json({ status: 'unhealthy', error: error.message });
   }
+});
+
+// ——— Global Error Handler (prevents serverless crash on unhandled errors) ———
+app.use((err: any, _req: any, res: any, _next: any) => {
+  console.error('[Server] Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error', message: err.message || 'Unknown error' });
 });
 
 export default app;

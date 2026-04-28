@@ -4,11 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "prisma generate --schema=backend/prisma/schema.prisma && next build",
+    "build": "npx prisma generate --schema=backend/prisma/schema.prisma && next build",
     "start": "next start -p 3001",
     "lint": "eslint"
   },
-
   "dependencies": {
     "@prisma/client": "^6.0.0",
     "@supabase/supabase-js": "^2.103.3",
@@ -32,7 +31,6 @@
     "react-dom": "19.2.4",
     "zod": "^3.23.0"
   },
-
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.7",
@@ -50,5 +48,4 @@
     "prisma": "^6.19.3",
     "typescript": "^5"
   }
-
 }

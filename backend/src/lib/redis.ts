@@ -1,7 +1,13 @@
 import Redis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL;
-const isRedisConfigured = !!REDIS_URL && REDIS_URL !== 'redis://localhost:6379' || process.env.NODE_ENV === 'development';
+// Only use a real Redis connection if REDIS_ENABLED=true is set,
+// OR if the URL is non-local (e.g. a hosted Redis like Upstash/Railway).
+// This prevents 500s when running locally without a Redis server.
+const isLocalRedis = !REDIS_URL ||
+  REDIS_URL.includes('localhost') ||
+  REDIS_URL.includes('127.0.0.1');
+const isRedisConfigured = process.env.REDIS_ENABLED === 'true' || !isLocalRedis;
 
 export const redis = isRedisConfigured
   ? new Redis(REDIS_URL!, {
