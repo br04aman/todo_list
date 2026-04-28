@@ -10,6 +10,7 @@ function CallbackContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (!searchParams) return;
     const token = searchParams.get('token');
     const refreshToken = searchParams.get('refreshToken');
     const error = searchParams.get('error');
