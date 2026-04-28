@@ -28,6 +28,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Next.js standalone output must be enabled in next.config.ts
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.env* ./
 COPY --from=build /app/.next/static ./.next/static
 
 EXPOSE 3001
